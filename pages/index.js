@@ -44,7 +44,7 @@ export default function PaginaInicial() {
         styleSheet={{
           display: "flex",
           alignItems: "center",
-          justifyContent: "right",
+          justifyContent: "center",
           backgroundColor: appConfig.theme.colors.primary[550],
           backgroundImage: "url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTutTUdq8ZFERwiOBfnN1DV0rgONAd9vH_nKA&usqp=CAU)",
           backgroundRepeat: "no-repeat",
@@ -117,7 +117,7 @@ export default function PaginaInicial() {
               onChange={function (event) {
                 console.log('O usuário digitou ', event.target.value);
                 //Onde está o valor?
-                if (event.target.value.length > 2) {
+                if (event.target.value.length > 2) {//se o valor do caracter não for maior que 2 ele não declara o valor.
                   const valor = event.target.value;
                 }
                 //Troca de valor da variável
@@ -189,3 +189,4 @@ export default function PaginaInicial() {
     </>
   );
 }
+//`url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTutTUdq8ZFERwiOBfnN1DV0rgONAd9vH_nKA&usqp=CAU)`
