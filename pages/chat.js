@@ -1,24 +1,52 @@
 import { Box, Text, TextField, Image, Button } from "@skynexui/components";
 import React from "react";
 import appConfig from "../config.json";
+import { useRouter } from "next/router";
 import { createClient } from '@supabase/supabase-js';
+import { ButtonSendSticker } from '../src/components/ButtonSendSticker';
 
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0Mzc2MzI4OCwiZXhwIjoxOTU5MzM5Mjg4fQ.YiC7m6vd7UQarZPvOpqGKshax2cDkDFC8rNITvTwes0'; 
 const SUPABESE_URL = 'https://lbjzlwfotmcczjtfhjgo.supabase.co';
-const supabaseClien = createClient(SUPABESE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = createClient(SUPABESE_URL, SUPABASE_ANON_KEY);
 
-
+function escutaMensagensEmTempoReal(adicionaMensagem) {
+  return supabaseClient.from('mensagens').on('INSERT', (respostaLive) => {
+    adicionaMensagem(respostaLive.new);
+  }).subscribe();
+}
 
 export default function ChatPage() {
+  const roteamento = useRouter();
+  const usuarioLogado = roteamento.query.username;
   const [mensagem, setMensagem] = React.useState("");
-  const [listaDeMensagens, setListaDeMensagens] = React.useState([]);
+  const [listaDeMensagens, setListaDeMensagens] = React.useState([
+    // {
+    //   id: 1,
+    //   de: 'natancolen',
+    //   texto: ':sticker: https://www.alura.com.br/imersao-react-4/assets/figurinhas/Figurinha_4.png',
+    // }
+  ]);
 
   React.useEffect(() => {
-    supabaseClien.from('mensagens').select('*').order('id', {ascending: false}).then(({data}) => {
-      console.log('Dados da consulta: ', data);
+    supabaseClient.from('mensagens').select('*').order('id', {ascending: false}).then(({data}) => {
+      //console.log('Dados da consulta: ', data);
       setListaDeMensagens(data);
     });
-  }, []);
+
+    const subscrition = escutaMensagensEmTempoReal((novaMensagem) => {
+      console.log('Nova mensagem: ', novaMensagem);
+      setListaDeMensagens((valorAtualDaLista) => {
+        return [
+          novaMensagem,
+          ...valorAtualDaLista,
+        ]
+      });
+    });
+
+    return () => {
+      subscrition.unsubscribe();
+    }
+  }, []); 
 
   /*
     // Usuário
@@ -36,16 +64,18 @@ export default function ChatPage() {
   function handleNovaMensagem(novaMensagem) {
     const mensagem = {
       //id: listaDeMensagens.length + 1,
-      de: "vanessametonini",
+      de: usuarioLogado,
       texto: novaMensagem,
     };
-    supabaseClien.from('mensagens').insert([mensagem]).then(({data}) => {
-      //console.log('Criando mensagem: ', data);
-      setListaDeMensagens([data[0], ...listaDeMensagens]);
+    supabaseClient.from('mensagens').insert([
+      //Tem que ser um objeto com os MESMO CAMPOS que você escreveu 
+      mensagem
+    ])
+    .then(({ data }) => {
+       console.log('Criando mensagem: ', data);
     });
 
-    
-    setMensagem("");
+    setMensagem('');
   }
 
   return (
@@ -139,7 +169,7 @@ export default function ChatPage() {
               onClick={(event) => {
                 event.preventDefault();
                 handleNovaMensagem(mensagem);
-                console.log(event);
+                //console.log(event);
               }}
               styleSheet={{
                 height: "40px",
@@ -147,7 +177,14 @@ export default function ChatPage() {
                 color: appConfig.theme.colors.neutrals[200]
               }}
             />
-                      
+            
+            <ButtonSendSticker
+              onStickerClick={(sticker) => {
+                //console.log('Salva este sticker no banco');
+                handleNovaMensagem(':sticker: ' + sticker);
+              }}
+            />
+
           </Box>
         </Box>
       </Box>
@@ -235,24 +272,19 @@ function MessageList(props) {
                 {new Date().toLocaleDateString()}
               </Text>
             </Box>
+            {/* [Decorarito] */}
+            {/* Condicional: {mensagem.texto.startsWith(':sticker:').toString()} */}
+            {/* {mensagem.texto.startsWith(':sticker:')
+              ? (
+                <Image src={mensagem.texto.replace(':sticker:', '')} />
+              ) 
+              : (
+                  mensagem.texto
+            )} */}
             {mensagem.texto}
           </Text>
         );
       })}
     </Box>
   );
-}
-
-function BotaoEnviarMensagem(prop) {
-    return (
-        <Box backgroundColor="white"
-            styleSheet={{
-            width: "3.5%", border: "0", resize:"none", borderRadius: "12px", aliginItems: "center",
-                   
-        }}>
-        
-            <Button label="Ok" />
-            
-        </Box>
-    );
 }

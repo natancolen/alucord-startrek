@@ -75,8 +75,8 @@ export default function PaginaInicial() {
             as="form"
             onSubmit={function (infosDoEvento) {
               infosDoEvento.preventDefault();
-              console.log('Alguém submiteu o form');
-              roteamento.push('/chat');
+              //console.log('Alguém submiteu o form');
+              roteamento.push(`/chat?username=${username}`);
               //window.location.href = '/chat'
             }}
             styleSheet={{
@@ -115,7 +115,7 @@ export default function PaginaInicial() {
             <TextField
               value={username}
               onChange={function (event) {
-                console.log('O usuário digitou ', event.target.value);
+                //console.log('O usuário digitou ', event.target.value);
                 //Onde está o valor?
                 if (event.target.value.length > 2) {//se o valor do caracter não for maior que 2 ele não declara o valor.
                   const valor = event.target.value;
